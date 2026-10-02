@@ -84,11 +84,28 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo 'Deploying application to Kubernetes...'
+                script {
+                    if (isUnix()) {
+                        sh 'kubectl apply -f k8s/deployment.yaml'
+                        sh 'kubectl rollout restart deployment/expense-tracker'
+                        sh 'kubectl rollout status deployment/expense-tracker'
+                    } else {
+                        bat 'kubectl apply -f k8s/deployment.yaml'
+                        bat 'kubectl rollout restart deployment/expense-tracker'
+                        bat 'kubectl rollout status deployment/expense-tracker'
+                    }
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'Jenkins CI/CD Pipeline executed successfully! JAR is archived and Docker image is pushed to Docker Hub.'
+            echo 'Jenkins CI/CD Pipeline executed successfully! JAR is archived, Docker image is pushed, and application is deployed to Kubernetes.'
         }
         failure {
             echo 'Jenkins CI/CD Pipeline failed. Please check the console output for errors.'
