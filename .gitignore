@@ -47,3 +47,6 @@ out/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Kubernetes secrets
+k8s/secret.yaml

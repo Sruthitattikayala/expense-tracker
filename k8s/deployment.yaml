@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expense-tracker
+  labels:
+    app: expense-tracker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expense-tracker
+  template:
+    metadata:
+      labels:
+        app: expense-tracker
+    spec:
+      containers:
+      - name: expense-tracker
+        image: siri57/expense-tracker:1.2
+        imagePullPolicy: IfNotPresent
+        stdin: true
+        tty: true
+        env:
+        - name: DB_HOST
+          value: "host.docker.internal"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: expense-tracker-secret
+              key: DB_PASSWORD
