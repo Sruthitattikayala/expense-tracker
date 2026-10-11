@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice &amp; Text Assistant — Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Navigation Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <a href="index.html" class="brand-link" title="Expense Tracker Home">
+                    <div class="brand-icon">💰</div>
+                    <div>
+                        <h1>Expense Tracker</h1>
+                        <p class="subtitle">AI-Assisted Personal Finance &bull; Multilingual</p>
+                    </div>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="nav-item" id="nav-home">🏠 Home</a>
+                <a href="notifications.html" class="nav-item" id="nav-notifications">
+                    🔔 Notifications <span id="header-unread-badge" class="badge badge-unread" style="display: none;">0</span>
+                </a>
+                <a href="assistant.html" class="nav-item active" id="nav-assistant">🎙️ Assistant</a>
+                <a href="budget.html" class="nav-item" id="nav-budget">💰 Budget</a>
+                <a href="spending.html" class="nav-item" id="nav-spending">📊 Spending</a>
+                <a href="add-expense.html" class="nav-item" id="nav-add">➕ Add Expense</a>
+                <a href="history.html" class="nav-item" id="nav-history">📜 History</a>
+            </nav>
+        </header>
+
+        <!-- Back to Home Bar -->
+        <div class="page-back-bar">
+            <a href="index.html" class="page-back-link">&larr; Back to Home Dashboard</a>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">AI Natural Language &bull; Web Speech API &bull; MySQL</span>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+        <!-- AI Assistant: Multilingual Voice & Natural Language Input -->
+        <section class="card assistant-card">
+            <div class="card-header assistant-header-flex">
+                <div class="assistant-title-group">
+                    <span class="assistant-sparkle">✨</span>
+                    <div>
+                        <h2>AI Voice &amp; Text Assistant / స్మార్ట్ అసిస్టెంట్</h2>
+                        <span class="card-subtitle">Enter your expenses or budget using Telugu, English or mixed language</span>
+                    </div>
+                </div>
+                <div class="assistant-controls">
+                    <div class="lang-selector">
+                        <select id="assistant-lang" title="Select Voice Recognition Language">
+                            <option value="te-IN" selected>🇮🇳 Telugu (తెలుగు)</option>
+                            <option value="en-IN">🇮🇳 English (India / Tanglish)</option>
+                            <option value="en-US">🌐 English (US)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assistant Input Box -->
+            <div class="assistant-input-box">
+                <textarea 
+                    id="assistant-input" 
+                    rows="3" 
+                    placeholder="Speak or type naturally... e.g. 'ఈరోజు vegetables కోసం 500 ఖర్చు చేశాను' or 'My salary is 30000. Need budget for food, education and rent'"></textarea>
+
+                <div class="assistant-btn-group">
+                    <button type="button" id="btn-mic" class="btn btn-mic" title="Click to speak (Voice Input)">
+                        <span class="mic-icon">🎙️</span>
+                        <span id="mic-label">Speak</span>
+                    </button>
+                    <button type="button" id="btn-parse" class="btn btn-primary" title="Analyze input">
+                        <span>⚡ Understand</span>
+                    </button>
+                    <button type="button" id="btn-clear-assistant" class="btn btn-secondary" title="Clear text">
+                        <span>✕</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Listening Status Indicator -->
+            <div id="mic-status" class="mic-status" style="display: none;">
+                <span class="pulse-dot"></span>
+                <span id="mic-status-text">Listening... speak in Telugu or English</span>
+            </div>
+
+            <!-- Quick Example Chips for One-Click Testing -->
+            <div class="assistant-chips">
+                <span class="chips-label">Try asking:</span>
+                <button type="button" class="chip" data-example="ఈరోజు vegetables కోసం 500 రూపాయలు ఖర్చు చేశాను.">
+                    🌱 "ఈరోజు vegetables కోసం 500 రూపాయలు ఖర్చు చేశాను."
+                </button>
+                <button type="button" class="chip" data-example="Today food ki 300 rupees spend ayyindi.">
+                    🍔 "Today food ki 300 rupees spend ayyindi."
+                </button>
+                <button type="button" class="chip" data-example="ఈ నెల నాకు 30000 జీతం వస్తుంది. నాకు ఫుడ్, ఎడ్యుకేషన్, రెంట్ కోసం బడ్జెట్ కావాలి.">
+                    💼 "ఈ నెల నాకు 30000 జీతం వస్తుంది... బడ్జెట్ కావాలి."
+                </button>
+                <button type="button" class="chip" data-example="My salary is 30000. I need a budget for food, education and rent.">
+                    📊 "My salary is 30000... budget for food, education and rent."
+                </button>
+            </div>
+
+            <!-- Smart Confirmation Card -->
+            <div id="confirmation-card" class="confirmation-card" style="display: none;">
+                <div class="confirmation-header">
+                    <div class="confirm-badge-group">
+                        <span id="confirm-intent-badge" class="badge badge-confirm">Parsed Intent</span>
+                        <span id="confirm-confidence" class="confidence-tag">95% match</span>
+                    </div>
+                    <button type="button" id="btn-dismiss-confirm" class="btn-close" title="Dismiss">✕</button>
+                </div>
+
+                <div class="confirmation-body" id="confirmation-body">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+
+                <div class="confirmation-actions">
+                    <button type="button" id="btn-confirm-apply" class="btn btn-success">
+                        <span>✓ Confirm &amp; Save to MySQL</span>
+                    </button>
+                    <button type="button" id="btn-confirm-edit" class="btn btn-secondary">
+                        <span>✏️ Edit in Form</span>
+                    </button>
+                    <button type="button" id="btn-confirm-cancel" class="btn btn-outline">
+                        <span>Cancel</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Expense Tracker &amp; Financial Assistant &copy; 2026 &bull; REST API on port 8080 &bull; Multilingual AI Voice/Text &bull; MySQL Backend</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

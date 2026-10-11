@@ -1,15 +1,19 @@
+import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
 
 public class Requirements {
 
+    private static final int PORT = 8080;
+
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
         ExpenseService expenseService = new ExpenseService();
-        int choice = 0;
 
         // Step 1: Verify MySQL JDBC Connection on startup
         System.out.println("Connecting to database...");
@@ -25,41 +29,33 @@ public class Requirements {
             System.out.println("Notice: Could not connect to MySQL.\n");
         }
 
-        while (choice != 8) {
-            displayMenu();
-            choice = sc.nextInt();
-            sc.nextLine();
+        // Step 2: Initialize Database Tables (expenses, monthly_budget, in_app_notifications)
+        expenseService.initDatabase();
 
-            switch (choice) {
-                case 1:
-                    addExpense(sc, expenseService);
-                    break;
-                case 2:
-                    viewExpenses(expenseService);
-                    break;
-                case 3:
-                    deleteExpense(sc, expenseService);
-                    break;
-                case 4:
-                    updateExpense(sc, expenseService);
-                    break;
-                case 5:
-                    calculateTotalExpense(expenseService);
-                    break;
-                case 6:
-                    showCategorySummary(expenseService);
-                    break;
-                case 7:
-                    showSpendingInsights(expenseService);
-                    break;
-                case 8:
-                    System.out.println("Exiting...");
-                    break;
-                default:
-                    System.out.println("Invalid choice!");
-            }
+        // Step 3: Start embedded HTTP server for REST API, Assistant, and Frontend
+        try {
+            HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+            server.createContext("/api/expenses", new ExpenseApiHandler(expenseService));
+            server.createContext("/api/budget", new BudgetApiHandler(expenseService));
+            server.createContext("/api/notifications", new NotificationApiHandler(expenseService));
+            server.createContext("/api/ai", new AiApiHandler());
+            server.createContext("/", new StaticFileHandler());
+            server.setExecutor(Executors.newFixedThreadPool(10));
+            server.start();
+
+            System.out.println("=================================================");
+            System.out.println(" Expense Tracker Web Server is running!");
+            System.out.println(" Listening on port: " + PORT);
+            System.out.println(" Frontend URL:    http://localhost:" + PORT + "/");
+            System.out.println(" Expenses API:    http://localhost:" + PORT + "/api/expenses");
+            System.out.println(" Budget API:      http://localhost:" + PORT + "/api/budget/guidelines");
+            System.out.println(" Notifications:   http://localhost:" + PORT + "/api/notifications");
+            System.out.println(" AI Parser API:   http://localhost:" + PORT + "/api/ai/parse");
+            System.out.println("=================================================");
+        } catch (IOException e) {
+            System.err.println("Failed to start HTTP server on port " + PORT + ": " + e.getMessage());
+            e.printStackTrace();
         }
-        sc.close();
     }
 
     // Displays the main menu options

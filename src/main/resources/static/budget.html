@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Budget Guidelines — Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Navigation Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <a href="index.html" class="brand-link" title="Expense Tracker Home">
+                    <div class="brand-icon">💰</div>
+                    <div>
+                        <h1>Expense Tracker</h1>
+                        <p class="subtitle">AI-Assisted Personal Finance &bull; Multilingual</p>
+                    </div>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="nav-item" id="nav-home">🏠 Home</a>
+                <a href="notifications.html" class="nav-item" id="nav-notifications">
+                    🔔 Notifications <span id="header-unread-badge" class="badge badge-unread" style="display: none;">0</span>
+                </a>
+                <a href="assistant.html" class="nav-item" id="nav-assistant">🎙️ Assistant</a>
+                <a href="budget.html" class="nav-item active" id="nav-budget">💰 Budget</a>
+                <a href="spending.html" class="nav-item" id="nav-spending">📊 Spending</a>
+                <a href="add-expense.html" class="nav-item" id="nav-add">➕ Add Expense</a>
+                <a href="history.html" class="nav-item" id="nav-history">📜 History</a>
+            </nav>
+        </header>
+
+        <!-- Back to Home Bar -->
+        <div class="page-back-bar">
+            <a href="index.html" class="page-back-link">&larr; Back to Home Dashboard</a>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Proportionate Distribution Engine &bull; MySQL</span>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+        <!-- Monthly Budget for Current Month Card -->
+        <section class="card current-budget-card" id="current-month-budget-section">
+            <div class="current-budget-header">
+                <div class="current-budget-title-group">
+                    <div class="current-budget-badge-row">
+                        <span class="badge badge-cur-month" id="cb-month-badge">October 2026</span>
+                        <span class="current-budget-status-pill status-neutral" id="cb-status-badge">ℹ️ No budget set</span>
+                    </div>
+                    <h2>Monthly Budget</h2>
+                    <span class="card-subtitle" id="cb-subtitle">Tracking spending against your active monthly budget</span>
+                </div>
+                <div class="budget-selector-group">
+                    <label for="cb-month-select" class="budget-select-label">Select Month:</label>
+                    <select id="cb-month-select" class="budget-period-select" title="Choose month to view or set budget"></select>
+                </div>
+            </div>
+
+            <!-- Current Monthly Budget Alert Notice -->
+            <div id="cb-alert-box" class="cb-alert-box" style="display: none;"></div>
+
+            <!-- Stats Grid: 4 items (Monthly Budget, Total Spent, Remaining Budget, Budget Usage) -->
+            <div class="current-budget-stats-grid">
+                <div class="cb-stat-card">
+                    <div class="cb-stat-label">Monthly Budget</div>
+                    <div class="cb-stat-value" id="cb-budget-val">No budget set</div>
+                    <div class="cb-stat-desc" id="cb-budget-desc">Set a budget to track spending</div>
+                </div>
+                <div class="cb-stat-card">
+                    <div class="cb-stat-label">Total Spent</div>
+                    <div class="cb-stat-value text-danger" id="cb-spent-val">₹0</div>
+                    <div class="cb-stat-desc">Current month expenses</div>
+                </div>
+                <div class="cb-stat-card">
+                    <div class="cb-stat-label">Remaining Budget</div>
+                    <div class="cb-stat-value" id="cb-remaining-val">—</div>
+                    <div class="cb-stat-desc" id="cb-remaining-desc">Budget not configured</div>
+                </div>
+                <div class="cb-stat-card">
+                    <div class="cb-stat-label">Budget Usage</div>
+                    <div class="cb-stat-value" id="cb-usage-val">—</div>
+                    <div class="cb-stat-desc" id="cb-usage-desc">Budget not configured</div>
+                </div>
+            </div>
+
+            <!-- Visual Progress Bar -->
+            <div class="current-budget-progress-section">
+                <div class="cb-progress-bar-track">
+                    <div class="cb-progress-bar-fill progress-normal" id="cb-progress-bar" style="width: 0%;"></div>
+                </div>
+                <div class="cb-progress-meta">
+                    <span id="cb-progress-spent-text">₹0 spent</span>
+                    <span id="cb-progress-budget-text">Budget: Not set</span>
+                </div>
+            </div>
+
+            <!-- Set / Update Monthly Budget Form -->
+            <div class="set-budget-panel">
+                <form id="set-monthly-budget-form" class="inline-set-budget-form">
+                    <label for="monthly-budget-input" class="set-budget-label">
+                        <strong>Set / Update Budget for <span id="cb-form-month-label">Current Month</span>:</strong>
+                    </label>
+                    <div class="set-budget-input-group">
+                        <span class="currency-symbol">₹</span>
+                        <input 
+                            type="number" 
+                            id="monthly-budget-input" 
+                            placeholder="Enter amount, e.g. 20000" 
+                            min="1" 
+                            step="1" 
+                            required
+                        >
+                        <button type="submit" class="btn btn-primary" id="btn-save-monthly-budget">
+                            <span>💾 Save Budget</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Weekly Budget for Current Week Card -->
+        <section class="card current-budget-card" id="current-week-budget-section">
+            <div class="current-budget-header">
+                <div class="current-budget-title-group">
+                    <div class="current-budget-badge-row">
+                        <span class="badge badge-cur-week" id="wb-week-badge">Current Week</span>
+                        <span class="badge badge-date-range" id="wb-dates-badge" style="display: none;"></span>
+                        <span class="current-budget-status-pill status-neutral" id="wb-status-badge">ℹ️ No budget set</span>
+                    </div>
+                    <h2>Weekly Budget</h2>
+                    <span class="card-subtitle" id="wb-subtitle">Tracking spending against your active weekly budget</span>
+                </div>
+                <div class="budget-selector-group">
+                    <label for="wb-week-select" class="budget-select-label">Select Week:</label>
+                    <select id="wb-week-select" class="budget-period-select" title="Choose week to view or set budget"></select>
+                </div>
+            </div>
+
+            <!-- Stats Grid: 4 items (Weekly Budget, Total Spent This Week, Remaining Budget, Budget Usage) -->
+            <div class="current-budget-stats-grid">
+                <div class="cb-stat-card">
+                    <div class="cb-stat-label">Weekly Budget</div>
+                    <div class="cb-stat-value" id="wb-budget-val">No budget set</div>
+                    <div class="cb-stat-desc" id="wb-budget-desc">Set a weekly budget to track spending</div>
+                </div>
+                <div class="cb-stat-card">
+                    <div class="cb-stat-label">Spent This Week</div>
+                    <div class="cb-stat-value text-danger" id="wb-spent-val">₹0</div>
+                    <div class="cb-stat-desc">Current week expenses</div>
+                </div>
+                <div class="cb-stat-card">
+                    <div class="cb-stat-label">Remaining Budget</div>
+                    <div class="cb-stat-value" id="wb-remaining-val">—</div>
+                    <div class="cb-stat-desc" id="wb-remaining-desc">Budget not configured</div>
+                </div>
+                <div class="cb-stat-card">
+                    <div class="cb-stat-label">Budget Usage</div>
+                    <div class="cb-stat-value" id="wb-usage-val">—</div>
+                    <div class="cb-stat-desc" id="wb-usage-desc">Budget not configured</div>
+                </div>
+            </div>
+
+            <!-- Visual Progress Bar -->
+            <div class="current-budget-progress-section">
+                <div class="cb-progress-bar-track">
+                    <div class="cb-progress-bar-fill progress-normal" id="wb-progress-bar" style="width: 0%;"></div>
+                </div>
+                <div class="cb-progress-meta">
+                    <span id="wb-progress-spent-text">₹0 spent this week</span>
+                    <span id="wb-progress-budget-text">Weekly Budget: Not set</span>
+                </div>
+            </div>
+
+            <!-- Set / Update Weekly Budget Form -->
+            <div class="set-budget-panel">
+                <form id="set-weekly-budget-form" class="inline-set-budget-form">
+                    <label for="weekly-budget-input" class="set-budget-label">
+                        <strong>Set / Update Budget for <span id="wb-form-week-label">Current Week</span>:</strong>
+                    </label>
+                    <div class="set-budget-input-group">
+                        <span class="currency-symbol">₹</span>
+                        <input 
+                            type="number" 
+                            id="weekly-budget-input" 
+                            placeholder="Enter amount, e.g. 5000" 
+                            min="0.01" 
+                            step="0.01" 
+                            required
+                        >
+                        <button type="submit" class="btn btn-primary" id="btn-save-weekly-budget">
+                            <span>💾 Save Weekly Budget</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Automatic Budget Distribution Guidelines (Flexible Suggestions Only) -->
+        <section class="card budget-guidelines-card" id="budget-section">
+            <div class="card-header budget-header-flex">
+                <div>
+                    <h2>💰 Automatic Budget Distribution Guidelines / బడ్జెట్ మార్గదర్శకాలు</h2>
+                    <span class="card-subtitle">Enter your monthly salary and select your expense categories to receive flexible spending guidelines</span>
+                </div>
+                <div class="budget-header-actions">
+                    <button type="button" id="btn-generate-guidelines" class="btn btn-primary btn-sm">
+                        ⚡ Generate &amp; Save Guidelines
+                    </button>
+                    <button type="button" id="btn-reset-guidelines" class="btn btn-secondary btn-sm">
+                        ↺ Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Prominent Flexible Guidelines Disclaimer Banner -->
+            <div class="guideline-disclaimer-banner">
+                <span class="banner-icon">💡</span>
+                <div class="banner-content">
+                    <strong>Flexible Guidelines Only — Not Strict Spending Limits:</strong>
+                    These percentages and suggested amounts are helpful recommendations based on your monthly salary to guide your finances. You are completely free to spend more or less than suggested as your actual needs require.
+                </div>
+            </div>
+
+            <div class="budget-setup-grid">
+                <!-- Monthly Salary Input -->
+                <div class="form-group salary-input-box">
+                    <label for="budget-salary">
+                        <strong>Monthly Salary (₹)</strong> <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="number" 
+                        id="budget-salary" 
+                        placeholder="Enter monthly salary, e.g. 30000" 
+                        min="1" 
+                        step="1">
+                </div>
+
+                <!-- Category Selection Chips -->
+                <div class="category-selection-box">
+                    <label class="category-selection-label">
+                        <strong>Select Desired Categories:</strong>
+                        <span class="selection-hint">Tap any category to include or exclude</span>
+                    </label>
+                    <div class="budget-category-chips" id="budget-category-chips">
+                        <button type="button" class="budget-chip chip-active" data-category="Food">🍔 Food</button>
+                        <button type="button" class="budget-chip chip-active" data-category="Rent">🏠 Rent</button>
+                        <button type="button" class="budget-chip chip-active" data-category="Savings">📈 Savings</button>
+                        <button type="button" class="budget-chip chip-active" data-category="Education">🎓 Education</button>
+                        <button type="button" class="budget-chip" data-category="Gym">💪 Gym</button>
+                        <button type="button" class="budget-chip" data-category="Transportation">🚗 Transportation</button>
+                        <button type="button" class="budget-chip" data-category="Utilities">⚡ Utilities</button>
+                        <button type="button" class="budget-chip" data-category="Healthcare">🏥 Healthcare</button>
+                        <button type="button" class="budget-chip" data-category="Shopping">🛍️ Shopping</button>
+                        <button type="button" class="budget-chip chip-active" data-category="Others">📦 Others</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guidelines Summary Cards -->
+            <div class="budget-stat-cards">
+                <div class="budget-stat-item">
+                    <span class="budget-stat-label">Monthly Salary</span>
+                    <span class="budget-stat-val" id="guideline-salary">₹0</span>
+                </div>
+                <div class="budget-stat-item">
+                    <span class="budget-stat-label">Suggested Guidelines Total</span>
+                    <span class="budget-stat-val" id="guideline-total-allocated">₹0</span>
+                </div>
+                <div class="budget-stat-item highlight positive">
+                    <span class="budget-stat-label">Flexible / Unallocated Cushion</span>
+                    <span class="budget-stat-val" id="guideline-unallocated">₹0</span>
+                </div>
+            </div>
+
+            <!-- Multi-color Guideline Distribution Progress Bar -->
+            <div class="allocation-bar-section">
+                <div class="allocation-bar-label">
+                    <span>Suggested Distribution Breakdown</span>
+                    <span id="guideline-allocated-pct">0% allocated</span>
+                </div>
+                <div class="multi-progress-track" id="guideline-multi-bar">
+                    <div class="multi-bar bar-empty" style="width: 100%; background: #e2e8f0;" title="No guidelines generated yet"></div>
+                </div>
+                <div class="budget-legend" id="guideline-legend">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Category Guidelines vs. Actual Spending -->
+            <div class="guidelines-vs-actual-section">
+                <div class="section-subheading">
+                    <div>
+                        <h3>Category Guidelines vs. Actual Spending (This Month)</h3>
+                        <span class="subheading-note">Compare suggested guidelines against recorded transactions &bull; Guidelines are flexible, not limits</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="guidelines-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 170px;">Category</th>
+                                <th style="width: 170px;">Suggested Guideline</th>
+                                <th style="width: 150px;">Actual Spent</th>
+                                <th style="width: 220px;">Guideline Status</th>
+                                <th>Spending Pace</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guidelines-vs-actual-tbody">
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    Enter salary and click "Generate &amp; Save Guidelines" or confirm via Assistant to view guidelines vs actual spending.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Expense Tracker &amp; Financial Assistant &copy; 2026 &bull; REST API on port 8080 &bull; Multilingual AI Voice/Text &bull; MySQL Backend</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

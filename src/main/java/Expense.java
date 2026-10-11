@@ -1,9 +1,19 @@
 public class Expense{
     
+        int id = 0;
         int amount = 0;
         String category = "";
         String description = "";
         String date = "";
+
+        public void setId(int id){
+            this.id = id;
+        }
+
+        public int getId(){
+            return id;
+        }
+
         public void setAmount(int amount){
                     
                     if(amount>0){

@@ -48,5 +48,13 @@ out/
 Thumbs.db
 Desktop.ini
 
-# Kubernetes secrets
+# Kubernetes secrets & local credentials
 k8s/secret.yaml
+.env
+*.env
+.env.*
+*.secret
+local.properties
+application-local.properties
+application-local.yaml
+application-local.yml

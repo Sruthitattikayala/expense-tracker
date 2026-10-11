@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense History — Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Navigation Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <a href="index.html" class="brand-link" title="Expense Tracker Home">
+                    <div class="brand-icon">💰</div>
+                    <div>
+                        <h1>Expense Tracker</h1>
+                        <p class="subtitle">AI-Assisted Personal Finance &bull; Multilingual</p>
+                    </div>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="nav-item" id="nav-home">🏠 Home</a>
+                <a href="notifications.html" class="nav-item" id="nav-notifications">
+                    🔔 Notifications <span id="header-unread-badge" class="badge badge-unread" style="display: none;">0</span>
+                </a>
+                <a href="assistant.html" class="nav-item" id="nav-assistant">🎙️ Assistant</a>
+                <a href="budget.html" class="nav-item" id="nav-budget">💰 Budget</a>
+                <a href="spending.html" class="nav-item" id="nav-spending">📊 Spending</a>
+                <a href="add-expense.html" class="nav-item" id="nav-add">➕ Add Expense</a>
+                <a href="history.html" class="nav-item active" id="nav-history">📜 History</a>
+            </nav>
+        </header>
+
+        <!-- Back to Home Bar -->
+        <div class="page-back-bar">
+            <a href="index.html" class="page-back-link">&larr; Back to Home Dashboard</a>
+            <a href="add-expense.html" class="btn btn-primary btn-sm">➕ Add New Expense</a>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+        <!-- Inline Edit Expense Panel (Revealed on Edit Click) -->
+        <section class="card form-card" id="edit-expense-panel" style="display: none;">
+            <div class="card-header">
+                <h2 id="form-title">Edit Expense</h2>
+                <span id="form-mode-badge" class="badge badge-edit">Editing</span>
+            </div>
+            <form id="expense-form" class="form">
+                <input type="hidden" id="expense-id">
+
+                <div class="form-group">
+                    <label for="amount">Amount (₹) <span class="required">*</span></label>
+                    <input 
+                        type="number" 
+                        id="amount" 
+                        name="amount" 
+                        placeholder="e.g. 50" 
+                        min="1" 
+                        step="1" 
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category <span class="required">*</span></label>
+                    <select id="category" name="category" required>
+                        <option value="" disabled selected>Select category</option>
+                        <option value="Food">Food &amp; Dining</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Utilities">Utilities &amp; Bills</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Rent">Rent</option>
+                        <option value="Education">Education</option>
+                        <option value="Gym">Gym &amp; Fitness</option>
+                        <option value="Savings">Savings</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date <span class="required">*</span></label>
+                    <input 
+                        type="date" 
+                        id="date" 
+                        name="date" 
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input 
+                        type="text" 
+                        id="description" 
+                        name="description" 
+                        placeholder="e.g. Grocery shopping, Metro pass" 
+                        maxlength="255">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="btn-submit" class="btn btn-primary">
+                        <span>💾 Save Changes</span>
+                    </button>
+                    <button type="button" id="btn-cancel" class="btn btn-secondary">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Full Width: All Expenses Table -->
+        <section class="card table-card">
+            <div class="card-header table-header-flex">
+                <div>
+                    <h2>History &amp; All Expenses</h2>
+                    <span class="card-subtitle">View and manage all your previously entered expenses</span>
+                </div>
+                <div class="table-search-box">
+                    <input 
+                        type="text" 
+                        id="table-search" 
+                        placeholder="Search category, description, or date..." 
+                        aria-label="Search expenses">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="expenses-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">ID</th>
+                            <th style="width: 130px;">Date</th>
+                            <th style="width: 160px;">Category</th>
+                            <th>Description</th>
+                            <th style="width: 130px; text-align: right;">Amount</th>
+                            <th style="width: 160px; text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenses-tbody">
+                        <tr>
+                            <td colspan="6" class="loading-state">Loading expenses from MySQL...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Expense Tracker &amp; Financial Assistant &copy; 2026 &bull; REST API on port 8080 &bull; Multilingual AI Voice/Text &bull; MySQL Backend</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
