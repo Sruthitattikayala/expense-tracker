@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD || 'ci_root_password' }}
+          MYSQL_DATABASE: Expense_Tracker
+          MYSQL_USER: ${{ secrets.DB_USER || 'expense_app' }}
+          MYSQL_PASSWORD: ${{ secrets.DB_PASSWORD || 'ci_expense_password' }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Verify MySQL port availability
+        run: |
+          echo "Waiting for MySQL service on 127.0.0.1:3306..."
+          for i in {1..30}; do
+            if (echo > /dev/tcp/127.0.0.1/3306) >/dev/null 2>&1 || nc -z 127.0.0.1 3306 >/dev/null 2>&1; then
+              echo "MySQL port 3306 is open and accessible."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "ERROR: Timed out waiting for MySQL port 3306."
+          exit 1
+
+      - name: Run Maven Tests
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: ${{ secrets.DB_USER || 'expense_app' }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD || 'ci_expense_password' }}
+        run: mvn clean test --batch-mode
+
+      - name: Verify No Tests Skipped
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "Verifying test execution results..."
+          echo "=========================================="
+          if [ ! -d "target/surefire-reports" ]; then
+            echo "ERROR: target/surefire-reports directory not found! Tests failed to run."
+            exit 1
+          fi
+
+          # Output summary of all test suites safely
+          grep -h -E "^Tests run:|^Test set:" target/surefire-reports/*.txt 2>/dev/null || true
+
+          # Calculate total tests run and total skipped tests
+          TOTAL_RUN=$(grep -h "^Tests run: " target/surefire-reports/*.txt 2>/dev/null | awk -F'[, ]+' '{sum += $3} END {print sum}')
+          TOTAL_SKIPPED=$(grep -h "^Tests run: " target/surefire-reports/*.txt 2>/dev/null | awk -F'[, ]+' '{sum += $9} END {print sum}')
+          TOTAL_FAILURES=$(grep -h "^Tests run: " target/surefire-reports/*.txt 2>/dev/null | awk -F'[, ]+' '{sum += $5} END {print sum}')
+          TOTAL_ERRORS=$(grep -h "^Tests run: " target/surefire-reports/*.txt 2>/dev/null | awk -F'[, ]+' '{sum += $7} END {print sum}')
+
+          TOTAL_RUN=${TOTAL_RUN:-0}
+          TOTAL_SKIPPED=${TOTAL_SKIPPED:-0}
+          TOTAL_FAILURES=${TOTAL_FAILURES:-0}
+          TOTAL_ERRORS=${TOTAL_ERRORS:-0}
+
+          echo "Summary: Run=$TOTAL_RUN, Failures=$TOTAL_FAILURES, Errors=$TOTAL_ERRORS, Skipped=$TOTAL_SKIPPED"
+
+          if [ "$TOTAL_FAILURES" -gt 0 ] || [ "$TOTAL_ERRORS" -gt 0 ]; then
+            echo "ERROR: Test failures ($TOTAL_FAILURES) or errors ($TOTAL_ERRORS) detected in CI execution!"
+            exit 1
+          fi
+
+          if [ "$TOTAL_SKIPPED" -gt 0 ]; then
+            echo "ERROR: Detected $TOTAL_SKIPPED skipped test(s)! CI must not silently skip required tests."
+            exit 1
+          fi
+
+          if [ "$TOTAL_RUN" -lt 72 ]; then
+            echo "ERROR: Expected at least 72 tests to run, but only $TOTAL_RUN executed!"
+            exit 1
+          fi
+
+          echo "SUCCESS: All $TOTAL_RUN tests executed with 0 failures, 0 errors, and 0 skipped."
+
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-test-reports
+          path: target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Package JAR
+        run: mvn package -DskipTests --batch-mode
