@@ -113,7 +113,7 @@ public class AiParserService {
         Set<String> matchedCats = new LinkedHashSet<>();
 
         // Food
-        if (containsAny(lower, "food", "ఫుడ్", "ఆహారం", "కూరగాయలు", "dining", "కిరాణా", "groceries")) {
+        if (containsAny(lower, "food", "ఫుడ్", "ఆహారం", "కూరగాయ", "dining", "కిరాణా", "groceries")) {
             matchedCats.add("Food");
         }
         // Rent / Housing
@@ -165,7 +165,7 @@ public class AiParserService {
         result.amount = extractAmount(text, lower);
 
         // Extract Category
-        if (containsAny(lower, "vegetables", "కూరగాయలు", "food", "ఫుడ్", "ఆహారం", "dining", "lunch", "dinner", "breakfast", "టిఫిన్", "భోజనం", "groceries", "కిరాణా")) {
+        if (containsAny(lower, "vegetables", "కూరగాయ", "food", "ఫుడ్", "ఆహారం", "dining", "lunch", "dinner", "breakfast", "టిఫిన్", "భోజనం", "groceries", "కిరాణా")) {
             result.category = "Food";
         } else if (containsAny(lower, "rent", "రెంట్", "అద్దె", "ఇంటి అద్దె", "house rent", "room rent")) {
             result.category = "Rent";
@@ -189,10 +189,10 @@ public class AiParserService {
 
         // Extract Date (Defaults to today)
         LocalDate targetDate = LocalDate.now();
-        if (containsAny(lower, "yesterday", "నిన్న")) {
-            targetDate = targetDate.minusDays(1);
-        } else if (containsAny(lower, "మొన్న", "day before yesterday")) {
+        if (containsAny(lower, "day before yesterday", "మొన్న")) {
             targetDate = targetDate.minusDays(2);
+        } else if (containsAny(lower, "yesterday", "నిన్న")) {
+            targetDate = targetDate.minusDays(1);
         }
         result.date = targetDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 

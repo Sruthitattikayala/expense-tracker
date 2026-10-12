@@ -267,9 +267,30 @@ public class ExpenseDAO {
     }
 
     // =========================================================================
-    // Automated Database Table Initialization (monthly_budget, weekly_budget & in_app_notifications)
+    // Automated Database Table Initialization (expenses, monthly_budget, weekly_budget & in_app_notifications)
     // =========================================================================
     public void initDatabase() {
+        try (Connection conn = DBConnection.getConnection()) {
+            if (conn == null) {
+                System.out.println("Notice: Could not connect to MySQL to verify tables.");
+                return;
+            }
+            initDatabase(conn);
+            System.out.println("MySQL tables (expenses, monthly_budget, weekly_budget, in_app_notifications) verified and initialized successfully.");
+        } catch (SQLException e) {
+            System.out.println("Notice: Table initialization check: " + e.getMessage());
+        }
+    }
+
+    public void initDatabase(Connection conn) throws SQLException {
+        String createExpensesTable = "CREATE TABLE IF NOT EXISTS expenses (" +
+                "Id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "Amount DECIMAL(10,2) NOT NULL, " +
+                "Category VARCHAR(50) NOT NULL, " +
+                "Description VARCHAR(100) NOT NULL, " +
+                "date DATE NOT NULL" +
+                ")";
+
         String createBudgetTable = "CREATE TABLE IF NOT EXISTS monthly_budget (" +
                 "id INT AUTO_INCREMENT PRIMARY KEY, " +
                 "month_year VARCHAR(7) NOT NULL UNIQUE, " +
@@ -297,23 +318,17 @@ public class ExpenseDAO {
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ")";
 
-        try (Connection conn = DBConnection.getConnection()) {
-            if (conn == null) {
-                System.out.println("Notice: Could not connect to MySQL to verify tables.");
-                return;
-            }
-            try (PreparedStatement s1 = conn.prepareStatement(createBudgetTable)) {
-                s1.executeUpdate();
-            }
-            try (PreparedStatement s_week = conn.prepareStatement(createWeeklyBudgetTable)) {
-                s_week.executeUpdate();
-            }
-            try (PreparedStatement s2 = conn.prepareStatement(createNotificationTable)) {
-                s2.executeUpdate();
-            }
-            System.out.println("MySQL tables (expenses, monthly_budget, weekly_budget, in_app_notifications) verified and initialized successfully.");
-        } catch (SQLException e) {
-            System.out.println("Notice: Table initialization check: " + e.getMessage());
+        try (PreparedStatement s0 = conn.prepareStatement(createExpensesTable)) {
+            s0.executeUpdate();
+        }
+        try (PreparedStatement s1 = conn.prepareStatement(createBudgetTable)) {
+            s1.executeUpdate();
+        }
+        try (PreparedStatement s_week = conn.prepareStatement(createWeeklyBudgetTable)) {
+            s_week.executeUpdate();
+        }
+        try (PreparedStatement s2 = conn.prepareStatement(createNotificationTable)) {
+            s2.executeUpdate();
         }
     }
 
