@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     Amount DECIMAL(10,2) NOT NULL,
     Category VARCHAR(50) NOT NULL,
-    Description VARCHAR(100) NOT NULL,
+    Description VARCHAR(50) NOT NULL,
     date DATE NOT NULL
 );
 
