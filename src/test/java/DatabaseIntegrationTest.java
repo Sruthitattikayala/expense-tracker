@@ -3,8 +3,12 @@ import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -33,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 2. Enforcing cleanup in try-finally blocks.
  * 3. Verifying initial and post-test row counts and exact pre-existing ID sets are strictly identical.
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DatabaseIntegrationTest {
 
     private static ExpenseDAO expenseDAO;
@@ -46,8 +51,24 @@ class DatabaseIntegrationTest {
 
         try (Connection conn = DBConnection.getConnection()) {
             dbAvailable = (conn != null && !conn.isClosed());
+            if (dbAvailable) {
+                // Ensure all core tables are verified and created before any test queries execute
+                expenseDAO.initDatabase(conn);
+            }
         } catch (SQLException e) {
             dbAvailable = false;
+        }
+    }
+
+    @BeforeEach
+    void ensureDatabaseInitialized() {
+        if (dbAvailable) {
+            try (Connection conn = DBConnection.getConnection()) {
+                if (conn != null && !conn.isClosed()) {
+                    expenseDAO.initDatabase(conn);
+                }
+            } catch (SQLException ignored) {
+            }
         }
     }
 
@@ -56,6 +77,7 @@ class DatabaseIntegrationTest {
     }
 
     @Test
+    @Order(1)
     @DisplayName("Verify live MySQL connectivity and required schema tables exist")
     void testDatabaseConnectivityAndSchema() throws SQLException {
         assumeDatabaseOnline();
@@ -84,6 +106,7 @@ class DatabaseIntegrationTest {
     }
 
     @Test
+    @Order(2)
     @DisplayName("Verify isolated expense CRUD lifecycle with guaranteed cleanup and zero data loss")
     void testIsolatedExpenseCrudLifecycle() {
         assumeDatabaseOnline();
@@ -145,9 +168,13 @@ class DatabaseIntegrationTest {
     }
 
     @Test
+    @Order(3)
     @DisplayName("Verify full-stack HTTP REST API with live database: create, retrieve, update, delete")
     void testFullStackRestApiWithLiveDatabase() throws Exception {
         assumeDatabaseOnline();
+
+        // Ensure database tables are initialized matching Requirements.java startup
+        expenseService.initDatabase();
 
         // Start a real embedded server wired with the real ExpenseService and live MySQL
         HttpServer liveServer = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -236,6 +263,7 @@ class DatabaseIntegrationTest {
     }
 
     @Test
+    @Order(4)
     @DisplayName("Verify live calculation queries execute safely without SQL errors")
     void testLiveCalculationsAndBudgetQueries() {
         assumeDatabaseOnline();
@@ -262,6 +290,7 @@ class DatabaseIntegrationTest {
     }
 
     @Test
+    @Order(5)
     @DisplayName("Verify ExpenseService integrated operations against live database")
     void testExpenseServiceLiveIntegration() {
         assumeDatabaseOnline();
