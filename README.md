@@ -299,6 +299,13 @@ mvn clean compile
 mvn exec:java
 ```
 
+**Run as Standalone Executable JAR:**
+First build the JAR using Maven and configure MySQL credentials through environment variables as explained in Step 2:
+```powershell
+mvn clean package -DskipTests
+java -jar target/expense-tracker-1.0-SNAPSHOT.jar
+```
+
 **Access the Web Interface:**
 Open your browser and navigate to:
 ```
