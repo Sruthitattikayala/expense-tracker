@@ -10,7 +10,31 @@ import java.util.concurrent.Executors;
 
 public class Requirements {
 
-    private static final int PORT = 8080;
+    public static final int DEFAULT_PORT = 8080;
+
+    public static int resolvePort() {
+        String portEnv = System.getenv("PORT");
+        if (portEnv != null && !portEnv.trim().isEmpty()) {
+            try {
+                int p = Integer.parseInt(portEnv.trim());
+                if (p > 0 && p <= 65535) {
+                    return p;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        String portProp = System.getProperty("PORT");
+        if (portProp != null && !portProp.trim().isEmpty()) {
+            try {
+                int p = Integer.parseInt(portProp.trim());
+                if (p > 0 && p <= 65535) {
+                    return p;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return DEFAULT_PORT;
+    }
 
     public static void main(String[] args) {
         ExpenseService expenseService = new ExpenseService();
@@ -33,8 +57,9 @@ public class Requirements {
         expenseService.initDatabase();
 
         // Step 3: Start embedded HTTP server for REST API, Assistant, and Frontend
+        int port = resolvePort();
         try {
-            HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+            HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
             server.createContext("/api/expenses", new ExpenseApiHandler(expenseService));
             server.createContext("/api/budget", new BudgetApiHandler(expenseService));
             server.createContext("/api/notifications", new NotificationApiHandler(expenseService));
@@ -45,15 +70,15 @@ public class Requirements {
 
             System.out.println("=================================================");
             System.out.println(" Expense Tracker Web Server is running!");
-            System.out.println(" Listening on port: " + PORT);
-            System.out.println(" Frontend URL:    http://localhost:" + PORT + "/");
-            System.out.println(" Expenses API:    http://localhost:" + PORT + "/api/expenses");
-            System.out.println(" Budget API:      http://localhost:" + PORT + "/api/budget/guidelines");
-            System.out.println(" Notifications:   http://localhost:" + PORT + "/api/notifications");
-            System.out.println(" AI Parser API:   http://localhost:" + PORT + "/api/ai/parse");
+            System.out.println(" Listening on port: " + port);
+            System.out.println(" Frontend URL:    http://localhost:" + port + "/");
+            System.out.println(" Expenses API:    http://localhost:" + port + "/api/expenses");
+            System.out.println(" Budget API:      http://localhost:" + port + "/api/budget/guidelines");
+            System.out.println(" Notifications:   http://localhost:" + port + "/api/notifications");
+            System.out.println(" AI Parser API:   http://localhost:" + port + "/api/ai/parse");
             System.out.println("=================================================");
         } catch (IOException e) {
-            System.err.println("Failed to start HTTP server on port " + PORT + ": " + e.getMessage());
+            System.err.println("Failed to start HTTP server on port " + port + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
