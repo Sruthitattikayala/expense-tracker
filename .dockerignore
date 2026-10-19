@@ -19,10 +19,6 @@ target/*
 !target/expense-tracker-1.0-SNAPSHOT.jar
 dependency-reduced-pom.xml
 
-# Source and build files (not needed inside the runtime image)
-src/
-pom.xml
-
 # CI/CD and docs
 Jenkinsfile
 README.md
