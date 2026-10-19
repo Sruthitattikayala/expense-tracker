@@ -25,10 +25,11 @@ public class DBConnection {
         String password = resolvePassword();
         try {
             connection = DriverManager.getConnection(url, user, password);
-        } catch (SQLException e) {
-            System.out.println("Database Connection Failed: " + e.getMessage());
-        }
-        return connection;
+       } catch (SQLException e) {
+    	    System.out.println("Database Connection Failed:");
+    	    e.printStackTrace();
+	}       
+ 	return connection;
     }
 
     public static int resolvePort() {
