@@ -3,18 +3,7 @@
  * Step 4: Multi-Page Application (Home, Notifications, Assistant, Budget, Spending, Add Expense, History)
  */
 
-// Determine the API base URL dynamically
-const getApiBase = () => {
-    const origin = window.location.origin;
-    if (origin && (origin.startsWith('http://') || origin.startsWith('https://'))) {
-        if (origin.includes(':8080')) {
-            return '/api/expenses';
-        }
-    }
-    return 'http://localhost:8080/api/expenses';
-};
-
-const API_BASE = getApiBase();
+const API_BASE = '/api/expenses';
 
 // Application State
 const state = {
